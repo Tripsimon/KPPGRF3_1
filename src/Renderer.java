@@ -37,14 +37,14 @@ public class Renderer extends AbstractRenderer {
         proj = new Mat4PerspRH(Math.PI / 4, height / (float)width, 0.1f, 100.f);
 
 
-        // vb
+        // Vertex Buffer
         float[] vb = {
              0.0f,  1.0f,   1.0f, 0.0f, 0.0f,
             -1.0f,  0.0f,   0.0f, 1.0f, 0.0f,
              1.0f, -1.0f,   0.0f, 0.0f, 1.0f
         };
 
-        // ib
+        // Index Buffer
         int[] ib = {
             0, 1, 2
         };
