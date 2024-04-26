@@ -9,10 +9,7 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import solids.Grid;
-import transforms.Camera;
-import transforms.Mat4;
-import transforms.Mat4PerspRH;
-import transforms.Vec3D;
+import transforms.*;
 
 import java.nio.DoubleBuffer;
 import static org.lwjgl.glfw.GLFW.*;
@@ -39,7 +36,7 @@ public class Renderer extends AbstractRenderer {
     double ox, oy;
 
     //Proměné pro vykreslení
-    private Mat4 proj;
+    private Mat4 proj,orthProj;
     private OGLBuffers buffers;
     private Grid grid;
     private OGLModelOBJ sphereModel,teapotModel,swordModel;
@@ -58,6 +55,8 @@ public class Renderer extends AbstractRenderer {
                 .withZenith(Math.toRadians(-45));
 
         proj = new Mat4PerspRH(Math.PI / 4, 1, 0.01f, 1000.f);
+        orthProj = new Mat4OrthoRH(Math.PI , Math.PI , 0.1f, 1000.f);
+
 
         //Objekty
         sphereModel = new OGLModelOBJ("/obj/sphere.obj");
