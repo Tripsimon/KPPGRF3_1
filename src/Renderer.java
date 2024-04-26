@@ -47,6 +47,7 @@ public class Renderer extends AbstractRenderer {
     //Uživatelské nastavení
     private int chosenSolid = 1;
     private int chosenForm = GL_FILL;
+    private int chosenRenderForm = GL_TRIANGLES;
 
     @Override
     public void init() {
@@ -133,7 +134,7 @@ public class Renderer extends AbstractRenderer {
         glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(proj)));
 
         // Vlastní vykreslení objektu
-        buffers.draw(GL_TRIANGLES, shaderProgram);
+        buffers.draw(chosenRenderForm, shaderProgram);
 
         // Zpracování volaných eventů
         glfwPollEvents();
@@ -343,7 +344,11 @@ public class Renderer extends AbstractRenderer {
                     default:
                         break;
                 }
+            }
 
+            //Změna formy renderovani
+            if (key == GLFW_KEY_R && action == GLFW_RELEASE) {
+                chosenRenderForm = (chosenRenderForm == GL_TRIANGLES) ? GL_TRIANGLE_STRIP : GL_TRIANGLES;
             }
 
         }
