@@ -1,4 +1,5 @@
 import lwjglutils.OGLBuffers;
+import lwjglutils.OGLModelOBJ;
 import lwjglutils.ShaderUtils;
 import lwjglutils.ToFloatArray;
 import org.lwjgl.BufferUtils;
@@ -13,11 +14,8 @@ import transforms.Mat4;
 import transforms.Mat4PerspRH;
 import transforms.Vec3D;
 
-import java.awt.*;
 import java.nio.DoubleBuffer;
-
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 import static org.lwjgl.opengl.GL20.*;
 
 /**
@@ -26,19 +24,29 @@ import static org.lwjgl.opengl.GL20.*;
  * @since 2019-09-02
  */
 public class Renderer extends AbstractRenderer {
+
+    //Shader
     private int shaderProgramTriangle, shaderProgramGrid;
-    private OGLBuffers buffers;
-    private Grid grid;
+
     private Camera camera;
 
     //cviceni
     private int shaderProgram, locMat;
 
-    //OVladani myší
+    //OVladani programu
     private boolean mouseButton1 = false;
+    private boolean mouseButton2 = false;
     double ox, oy;
 
+    //Proměné pro vykreslení
     private Mat4 proj;
+    private OGLBuffers buffers;
+    private Grid grid;
+    private OGLModelOBJ sphereModel,teapotModel,swordModel;
+
+    //Uživatelské nastavení
+    private int chosenSolid = 1;
+    private int chosenForm = GL_FILL;
 
     @Override
     public void init() {
@@ -50,9 +58,16 @@ public class Renderer extends AbstractRenderer {
 
         proj = new Mat4PerspRH(Math.PI / 4, 1, 0.01f, 1000.f);
 
-        createBuffers();
+        //Objekty
+        sphereModel = new OGLModelOBJ("/obj/sphere.obj");
+        teapotModel = new OGLModelOBJ("/obj/teapot.obj");
+        swordModel = new OGLModelOBJ("/obj/sword.obj");
+
 
         shaderProgram = ShaderUtils.loadProgram("/cube/simple");
+        shaderProgramGrid = ShaderUtils.loadProgram("/grid");
+
+        //createBuffersFlatness();
 
         glUseProgram(this.shaderProgram);
 
@@ -63,64 +78,284 @@ public class Renderer extends AbstractRenderer {
                 .withZenith(Math.PI * -0.125);
 
         glDisable(GL_CULL_FACE);
-
-        //initTriangleProgram();
-        //initGridProgram();
+        glEnable(GL_DEPTH_TEST);
     }
 
     @Override
     public void display() {
+        //Nastavení velikosti obrazovky
         glViewport(0, 0, width, height);
+
+        //Vyčištění obrazovky
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // set the current shader to be used
+        //Měnitelné nastavení uživatelem
+        glPolygonMode(GL_FRONT_AND_BACK, chosenForm);
+
+        //Výběr tělesa
+
+
+        switch (chosenSolid) {
+            case 1:
+                createBuffersGrid();
+                break;
+
+            case 2:
+                createBuffersCube();
+                break;
+
+            case 3:
+                createBuffersPike();
+                break;
+
+            case 4:
+                createBuffersSphere();
+                break;
+
+            case 5:
+                createBuffersTeapot();
+                break;
+
+            case 6:
+                createBuffersSword();
+                break;
+
+            default:
+                break;
+        }
+
+
+
+        //Nastavení používaného shaderu
         glUseProgram(shaderProgram);
 
-        glUniformMatrix4fv(locMat, false,
-                ToFloatArray.convert(camera.getViewMatrix().mul(proj)));
+        //Projekce
+        glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(proj)));
 
+        // Vlastní vykreslení objektu
         buffers.draw(GL_TRIANGLES, shaderProgram);
-        glfwPollEvents();
 
-        //buffers.draw(GL_TRIANGLES, shaderProgramTriangle);
-        //grid.getBuffers().draw(GL_TRIANGLES, shaderProgramGrid);
+        // Zpracování volaných eventů
+        glfwPollEvents();
     }
+
+
+    void createBuffersGrid(){
+        grid = new Grid(15, 15);
+        buffers = grid.getBuffers();
+    }
+
+    void createBuffersFlatness(){
+
+        float[] vertexBuffer ={
+
+                0, 0, 0,	1, 0, 0,
+                1, 0, 0,	0, 1, 0,
+                0, 1, 0,	0, 0, 1,
+                1, 1, 0,	1, 0, 0,
+
+                1, 0, 0,	1, 0, 0,
+                2, 0, 0,	0, 1, 0,
+                1, 1, 0,	0, 0, 1,
+                2, 1, 0,	0, 0, 0,
+
+                0, 1, 0,	1, 0, 0,
+                1, 1, 0,	0, 1, 0,
+                0, 2, 0,	0, 0, 1,
+                1, 2, 0,	0, 0, 0,
+
+                1, 1, 0,	1, 0, 0,
+                2, 1, 0,	0, 1, 0,
+                1, 2, 0,	0, 0, 1,
+                2, 2, 0,	0, 0, 0,
+
+
+                0, 2, 0,	1, 0, 0,
+                1, 2, 0,	0, 1, 0,
+                0, 3, 0,	0, 0, 1,
+                1, 3, 0,	0, 0, 0,
+
+                1, 2, 0,	1, 0, 0,
+                2, 2, 0,	0, 1, 0,
+                1, 3, 0,	0, 0, 1,
+                2, 3, 0,	0, 0, 0,
+
+                //Vrchní strana
+
+        };
+        int[] indexBuffer = {
+                0, 1, 2, 1, 2, 3,
+
+                4, 5, 6, 5, 6, 7,
+
+                8, 9, 10, 9, 10, 11,
+
+                12, 13, 11, 13, 14, 15,
+
+                16, 17, 18, 17, 18, 19,
+
+                20, 21, 22, 21, 22, 23
+
+        };
+
+        OGLBuffers.Attrib[] attributes = {
+                new OGLBuffers.Attrib("inPosition", 3),
+                new OGLBuffers.Attrib("inNormal", 3)
+        };
+
+        buffers = new OGLBuffers(vertexBuffer, attributes, indexBuffer);
+    }
+
+    void createBuffersCube(){
+
+        float[] vertexBuffer ={
+
+                //Spodní strana
+                1, 0, 0,	0, 0, -1,
+                0, 0, 0,	0, 0, -1,
+                1, 1, 0,	0, 0, -1,
+                0, 1, 0,	0, 0, -1,
+
+                //Vrchní strana
+                1, 0, 1,	0, 0, 1,
+                0, 0, 1,	0, 0, 1,
+                1, 1, 1,	0, 0, 1,
+                0, 1, 1,	0, 0, 1,
+
+                //Pravá strana
+                1, 1, 0,	1, 0, 0,
+                1, 0, 0,	1, 0, 0,
+                1, 1, 1,	1, 0, 0,
+                1, 0, 1,	1, 0, 0,
+
+                //Levá strana
+                0, 1, 0,	-1, 0, 0,
+                0, 0, 0,	-1, 0, 0,
+                0, 1, 1,	-1, 0, 0,
+                0, 0, 1,	-1, 0, 0,
+
+                //Přední strana
+                1, 1, 0,	0, 1, 0,
+                0, 1, 0,	0, 1, 0,
+                1, 1, 1,	0, 1, 0,
+                0, 1, 1,	0, 1, 0,
+
+                //Zadní strana
+                1, 0, 0,	0, -1, 0,
+                0, 0, 0,	0, -1, 0,
+                1, 0, 1,	0, -1, 0,
+                0, 0, 1,	0, -1, 0
+        };
+        int[] indexBufferData = new int[36];
+        for (int i = 0; i<6; i++){
+            indexBufferData[i*6] = i*4;
+            indexBufferData[i*6 + 1] = i*4 + 1;
+            indexBufferData[i*6 + 2] = i*4 + 2;
+            indexBufferData[i*6 + 3] = i*4 + 1;
+            indexBufferData[i*6 + 4] = i*4 + 2;
+            indexBufferData[i*6 + 5] = i*4 + 3;
+        }
+        OGLBuffers.Attrib[] attributes = {
+                new OGLBuffers.Attrib("inPosition", 3),
+                new OGLBuffers.Attrib("inNormal", 3)
+        };
+
+        buffers = new OGLBuffers(vertexBuffer, attributes, indexBufferData);
+    }
+
+    // !! POZOR !! NENí JEHLAN SCHVALNE. Tenhle obrazec je trochu vic interesting. Aby to byl jehlan, musel bych trochu proházet index vertex tak aby se nekřížily trojuhelniky
+    void createBuffersPike(){
+
+        float[] vertexBuffer ={
+                0, 0, 0,	1, 0, 0,
+                1, 0, 0,	0, 1, 0,
+                0, 1, 0,	0, 0, 1,
+                1, 1, 0,	1, 0, 0,
+
+                0.5f,0.5f,1,   1, 1, 1
+        };
+        int[] indexBuffer = {
+                0, 1, 2, 1, 2, 3,
+
+                0, 1, 4, 1, 2, 4, 2, 3, 4, 3, 0, 4
+        };
+
+        OGLBuffers.Attrib[] attributes = {
+                new OGLBuffers.Attrib("inPosition", 3),
+                new OGLBuffers.Attrib("inNormal", 3)
+        };
+
+        buffers = new OGLBuffers(vertexBuffer, attributes, indexBuffer);
+    }
+
+    void createBuffersSphere(){
+        buffers = sphereModel.getBuffers();
+    }
+
+    void createBuffersTeapot(){
+        buffers = teapotModel.getBuffers();
+    }
+
+    void createBuffersSword(){
+        buffers = swordModel.getBuffers();
+    }
+
 
     private GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
         @Override
         public void invoke(long window, int key, int scancode, int action, int mods) {
+
+            //Kamera
             if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
-                camera.forward(1);
-                System.out.println("FORWARD");
+                camera = camera.forward(1);
             }
             if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
-                camera.backward(1);
+                camera = camera.backward(1);
             }
             if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
-                camera.left(1);
+                camera = camera.left(1);
             }
             if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
-                camera.right(1);
+                camera = camera.right(1);
             }
 
-            if (key == GLFW_KEY_UP && action == GLFW_RELEASE) {
-                camera.addZenith(0.2);
+            //Změna tělesa
+            if (key == GLFW_KEY_Q && action == GLFW_RELEASE) {
+                chosenSolid++;
+                if(chosenSolid ==7){
+                    chosenSolid = 1;
+                }
             }
-            if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE) {
-                camera.addZenith(-0.2);
+
+            //Změna zobrazovací formy
+            if (key == GLFW_KEY_E && action == GLFW_RELEASE) {
+                switch (chosenForm){
+                    case GL_FILL:
+                        chosenForm = GL_LINE;
+                        break;
+                    case GL_LINE:
+                        chosenForm = GL_POINT;
+                        break;
+                    case GL_POINT:
+                        chosenForm = GL_FILL;
+                        break;
+
+                    default:
+                        break;
+                }
+
             }
-            if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE) {
-                camera.addAzimuth(0.2);
-            }
-            if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE) {
-                camera.addAzimuth(-0.2);
-            }
+
         }
     };
 
     private GLFWWindowSizeCallback wsCallback = new GLFWWindowSizeCallback() {
         @Override
         public void invoke(long window, int w, int h) {
+            if (w > 0 && h > 0 && (w != width || h != height)) {
+                width = w;
+                height = h;
+            }
         }
     };
 
@@ -130,6 +365,9 @@ public class Renderer extends AbstractRenderer {
             mouseButton1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
             mouseButton1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS;
 
+            /**
+             * Pohyb kamery pomoci myši
+             */
             if (button==GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS){
                 mouseButton1 = true;
                 DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
@@ -138,7 +376,6 @@ public class Renderer extends AbstractRenderer {
                 ox = xBuffer.get(0);
                 oy = yBuffer.get(0);
             }
-
             if (button==GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE){
                 mouseButton1 = false;
                 DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
@@ -150,6 +387,13 @@ public class Renderer extends AbstractRenderer {
                         .addZenith((double) Math.PI * (oy - y) / width);
                 ox = x;
                 oy = y;
+            }
+
+            if (button==GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS){
+                mouseButton2 = true;
+            }
+            if (button==GLFW_MOUSE_BUTTON_2 && action == GLFW_RELEASE){
+                mouseButton2 = false;
             }
         }
 
@@ -200,115 +444,6 @@ public class Renderer extends AbstractRenderer {
         return scrollCallback;
     }
 
-    void createBuffers(){
-        float[] cube ={
-                // bottom (z-) face
-                1, 0, 0,	0, 0, -1,
-                0, 0, 0,	0, 0, -1,
-                1, 1, 0,	0, 0, -1,
-                0, 1, 0,	0, 0, -1,
-                // top (z+) face
-                1, 0, 1,	0, 0, 1,
-                0, 0, 1,	0, 0, 1,
-                1, 1, 1,	0, 0, 1,
-                0, 1, 1,	0, 0, 1,
-                // x+ face
-                1, 1, 0,	1, 0, 0,
-                1, 0, 0,	1, 0, 0,
-                1, 1, 1,	1, 0, 0,
-                1, 0, 1,	1, 0, 0,
-                // x- face
-                0, 1, 0,	-1, 0, 0,
-                0, 0, 0,	-1, 0, 0,
-                0, 1, 1,	-1, 0, 0,
-                0, 0, 1,	-1, 0, 0,
-                // y+ face
-                1, 1, 0,	0, 1, 0,
-                0, 1, 0,	0, 1, 0,
-                1, 1, 1,	0, 1, 0,
-                0, 1, 1,	0, 1, 0,
-                // y- face
-                1, 0, 0,	0, -1, 0,
-                0, 0, 0,	0, -1, 0,
-                1, 0, 1,	0, -1, 0,
-                0, 0, 1,	0, -1, 0
-        };
-        int[] indexBufferData = new int[36];
-        for (int i = 0; i<6; i++){
-            indexBufferData[i*6] = i*4;
-            indexBufferData[i*6 + 1] = i*4 + 1;
-            indexBufferData[i*6 + 2] = i*4 + 2;
-            indexBufferData[i*6 + 3] = i*4 + 1;
-            indexBufferData[i*6 + 4] = i*4 + 2;
-            indexBufferData[i*6 + 5] = i*4 + 3;
-        }
-        OGLBuffers.Attrib[] attributes = {
-                new OGLBuffers.Attrib("inPosition", 3),
-                new OGLBuffers.Attrib("inNormal", 3)
-        };
 
-        buffers = new OGLBuffers(cube, attributes, indexBufferData);
-        System.out.println(buffers.toString());
-    }
-
-
-    public void initTriangleProgram(){
-        // vb
-        float[] vb = {
-                0.0f,  1.0f,   1.0f, 0.0f, 0.0f,
-                -1.0f,  0.0f,   0.0f, 1.0f, 0.0f,
-                1.0f, -1.0f,   0.0f, 0.0f, 1.0f
-        };
-
-        // ib
-        int[] ib = {
-                0, 1, 2
-        };
-
-        OGLBuffers.Attrib[] attributes = {
-                new OGLBuffers.Attrib("inPosition", 2),
-                new OGLBuffers.Attrib("inColor", 3),
-        };
-
-        buffers = new OGLBuffers(vb, attributes, ib);
-
-        shaderProgramTriangle = ShaderUtils.loadProgram("/triangle");
-        glUseProgram(shaderProgramTriangle);
-
-        int uColor = glGetUniformLocation(shaderProgramTriangle, "uColor");
-        glUniform3fv(uColor, new float[] {0.0f, 1.0f, 0.0f});
-    }
-
-    public void initGridProgram(){
-
-        // vb
-        float[] vb = {
-                0.0f,  1.0f,   1.0f, 0.0f, 0.0f,
-                -1.0f,  0.0f,   0.0f, 1.0f, 0.0f,
-                1.0f, -1.0f,   0.0f, 0.0f, 1.0f
-        };
-
-        // ib
-        int[] ib = {
-                0, 1, 2
-        };
-
-        OGLBuffers.Attrib[] attributes = {
-                new OGLBuffers.Attrib("inPosition", 2),
-                new OGLBuffers.Attrib("inColor", 3),
-        };
-
-        grid = new Grid(15, 15);
-        shaderProgramGrid = ShaderUtils.loadProgram("/grid");
-        glUseProgram(shaderProgramGrid);
-
-        int uView = glGetUniformLocation(shaderProgramGrid, "uView");
-        glUniformMatrix4fv(uView, false, camera.getViewMatrix().floatArray());
-
-        int uProj = glGetUniformLocation(shaderProgramGrid, "uProj");
-        glUniformMatrix4fv(uProj, false, proj.floatArray());
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
 
 }
