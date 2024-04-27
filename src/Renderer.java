@@ -36,25 +36,28 @@ public class Renderer extends AbstractRenderer {
     double ox, oy;
 
     //Proměné pro vykreslení
-    private Mat4 proj,orthProj;
+    private Mat4 perspProj,orthProj;
     private OGLBuffers buffers;
     private Grid grid;
     private OGLModelOBJ sphereModel,teapotModel,swordModel;
 
     //Uživatelské nastavení
     private int chosenSolid = 1;
-    private int chosenForm = GL_FILL;
+    private int chosenForm = GL_LINE;
     private int chosenRenderForm = GL_TRIANGLES;
+    private int chosenProjection = 1;
 
     @Override
     public void init() {
 
+        //Inicializace kamery
         camera = new Camera()
                 .withPosition(new Vec3D(0f, -2f, 2.f))
                 .withAzimuth(Math.toRadians(90))
                 .withZenith(Math.toRadians(-45));
 
-        proj = new Mat4PerspRH(Math.PI / 4, 1, 0.01f, 1000.f);
+        //Projekční matice
+        perspProj = new Mat4PerspRH(Math.PI / 4, 1, 0.01f, 1000.f);
         orthProj = new Mat4OrthoRH(Math.PI , Math.PI , 0.1f, 1000.f);
 
 
@@ -93,8 +96,6 @@ public class Renderer extends AbstractRenderer {
         glPolygonMode(GL_FRONT_AND_BACK, chosenForm);
 
         //Výběr tělesa
-
-
         switch (chosenSolid) {
             case 1:
                 createBuffersGrid();
@@ -130,7 +131,11 @@ public class Renderer extends AbstractRenderer {
         glUseProgram(shaderProgram);
 
         //Projekce
-        glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(proj)));
+        if (chosenProjection == 1){
+            glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(perspProj)));
+        }else{
+            glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(orthProj)));
+        }
 
         // Vlastní vykreslení objektu
         buffers.draw(chosenRenderForm, shaderProgram);
@@ -141,7 +146,7 @@ public class Renderer extends AbstractRenderer {
 
 
     void createBuffersGrid(){
-        grid = new Grid(15, 15);
+        grid = new Grid(50, 50);
         buffers = grid.getBuffers();
     }
 
@@ -348,6 +353,11 @@ public class Renderer extends AbstractRenderer {
             //Změna formy renderovani
             if (key == GLFW_KEY_R && action == GLFW_RELEASE) {
                 chosenRenderForm = (chosenRenderForm == GL_TRIANGLES) ? GL_TRIANGLE_STRIP : GL_TRIANGLES;
+            }
+
+            //Změna projekce
+            if (key == GLFW_KEY_P && action == GLFW_RELEASE) {
+                chosenProjection = (chosenProjection == 1) ? 2 : 1;
             }
 
         }
