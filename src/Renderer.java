@@ -30,6 +30,7 @@ public class Renderer extends AbstractRenderer {
     //cviceni
     private int shaderProgram, locMat;
 
+    private int loadedShaderProgramFlat, loadedShaderProgramSin;
     //OVladani programu
     private boolean mouseButton1 = false;
     private boolean mouseButton2 = false;
@@ -43,13 +44,14 @@ public class Renderer extends AbstractRenderer {
 
     //Uživatelské nastavení
     private int chosenSolid = 1;
+
+    private int chosenShaderProgram = 1;
     private int chosenForm = GL_LINE;
     private int chosenRenderForm = GL_TRIANGLES;
     private int chosenProjection = 1;
 
     @Override
     public void init() {
-
         //Inicializace kamery
         camera = new Camera()
                 .withPosition(new Vec3D(0f, -2f, 2.f))
@@ -67,19 +69,24 @@ public class Renderer extends AbstractRenderer {
         swordModel = new OGLModelOBJ("/obj/sword.obj");
 
 
-        shaderProgram = ShaderUtils.loadProgram("/cube/simple");
-        shaderProgramGrid = ShaderUtils.loadProgram("/grid");
+        //shaderProgram = ShaderUtils.loadProgram("/cube/simple");
+        shaderProgram = ShaderUtils.loadProgram("/grid");
+        //shaderProgram = ShaderUtils.loadProgram("/flat/flat");
 
-        //createBuffersFlatness();
+
+        createBuffersGrid();
 
         glUseProgram(this.shaderProgram);
 
         locMat = glGetUniformLocation(shaderProgram, "mat");
 
+        //Inicializace kamery
         camera = camera.withPosition(new Vec3D(5, 5, 2.5))
                 .withAzimuth(Math.PI * 1.25)
                 .withZenith(Math.PI * -0.125);
 
+        //Misc nastavení
+        glPointSize(2);
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
     }
@@ -96,7 +103,37 @@ public class Renderer extends AbstractRenderer {
         glPolygonMode(GL_FRONT_AND_BACK, chosenForm);
 
         //Výběr tělesa
+        /* Depracated protoze jsem idiot
         switch (chosenSolid) {
+            case 1:
+                createBuffersGrid();
+                break;
+
+            case 2:
+                createBuffersCube();
+                break;
+
+            case 3:
+                createBuffersPike();
+                break;
+
+            case 4:
+                createBuffersSphere();
+                break;
+
+            case 5:
+                createBuffersTeapot();
+                break;
+
+            case 6:
+                createBuffersSword();
+                break;
+
+            default:
+                break;
+        }*/
+
+        switch (chosenShaderProgram) {
             case 1:
                 createBuffersGrid();
                 break;
@@ -126,9 +163,15 @@ public class Renderer extends AbstractRenderer {
         }
 
 
-
         //Nastavení používaného shaderu
         glUseProgram(shaderProgram);
+
+
+        int uView = glGetUniformLocation(shaderProgram, "uView");
+        glUniformMatrix4fv(uView, false, camera.getViewMatrix().floatArray());
+
+        int uProj = glGetUniformLocation(shaderProgram, "uProj");
+        glUniformMatrix4fv(uProj, false, perspProj.floatArray());
 
         //Projekce
         if (chosenProjection == 1){
