@@ -69,9 +69,10 @@ public class Renderer extends AbstractRenderer {
         swordModel = new OGLModelOBJ("/obj/sword.obj");
 
 
-        //shaderProgram = ShaderUtils.loadProgram("/cube/simple");
-        shaderProgram = ShaderUtils.loadProgram("/grid");
-        //shaderProgram = ShaderUtils.loadProgram("/flat/flat");
+        loadedShaderProgramFlat = ShaderUtils.loadProgram("/flat/flat");
+        loadedShaderProgramSin = ShaderUtils.loadProgram("/grid");
+        loadedShaderProgramSin = ShaderUtils.loadProgram("/sphere/sphere");
+        shaderProgram = loadedShaderProgramFlat;
 
 
         createBuffersGrid();
@@ -135,27 +136,27 @@ public class Renderer extends AbstractRenderer {
 
         switch (chosenShaderProgram) {
             case 1:
-                createBuffersGrid();
+                shaderProgram = loadedShaderProgramFlat;
                 break;
 
             case 2:
-                createBuffersCube();
+                shaderProgram = loadedShaderProgramSin;
                 break;
 
             case 3:
-                createBuffersPike();
+                shaderProgram = loadedShaderProgramFlat;
                 break;
 
             case 4:
-                createBuffersSphere();
+                shaderProgram = loadedShaderProgramFlat;
                 break;
 
             case 5:
-                createBuffersTeapot();
+                shaderProgram = loadedShaderProgramFlat;
                 break;
 
             case 6:
-                createBuffersSword();
+                shaderProgram = loadedShaderProgramFlat;
                 break;
 
             default:
@@ -189,7 +190,7 @@ public class Renderer extends AbstractRenderer {
 
 
     void createBuffersGrid(){
-        grid = new Grid(50, 50);
+        grid = new Grid(25, 25);
         buffers = grid.getBuffers();
     }
 
@@ -372,6 +373,14 @@ public class Renderer extends AbstractRenderer {
                 chosenSolid++;
                 if(chosenSolid ==7){
                     chosenSolid = 1;
+                }
+            }
+
+            //Změna shaderu
+            if (key == GLFW_KEY_F && action == GLFW_RELEASE) {
+                chosenShaderProgram++;
+                if(chosenShaderProgram ==7){
+                    chosenShaderProgram = 1;
                 }
             }
 
