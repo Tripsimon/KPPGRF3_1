@@ -32,7 +32,7 @@ public class Renderer extends AbstractRenderer {
 
     private float rotation = 0;
 
-    private int loadedShaderProgramFlat, loadedShaderProgramSin;
+    private int loadedShaderProgramFlat, loadedShaderProgramFunction ,loadedShaderProgramSphere, loadedShaderProgramHourglass;
     //OVladani programu
     private boolean mouseButton1 = false;
     private boolean mouseButton2 = false;
@@ -72,8 +72,9 @@ public class Renderer extends AbstractRenderer {
 
 
         loadedShaderProgramFlat = ShaderUtils.loadProgram("/flat/flat");
-        loadedShaderProgramSin = ShaderUtils.loadProgram("/grid");
-        loadedShaderProgramSin = ShaderUtils.loadProgram("/sphere/sphere");
+        loadedShaderProgramFunction = ShaderUtils.loadProgram("/function/function");
+        loadedShaderProgramSphere = ShaderUtils.loadProgram("/sphere/sphere");
+        loadedShaderProgramHourglass = ShaderUtils.loadProgram("/hourglass/hourglass");
         shaderProgram = loadedShaderProgramFlat;
 
 
@@ -142,15 +143,15 @@ public class Renderer extends AbstractRenderer {
                 break;
 
             case 2:
-                shaderProgram = loadedShaderProgramSin;
+                shaderProgram = loadedShaderProgramFunction;
                 break;
 
             case 3:
-                shaderProgram = loadedShaderProgramFlat;
+                shaderProgram = loadedShaderProgramSphere;
                 break;
 
             case 4:
-                shaderProgram = loadedShaderProgramFlat;
+                shaderProgram = loadedShaderProgramHourglass;
                 break;
 
             case 5:
