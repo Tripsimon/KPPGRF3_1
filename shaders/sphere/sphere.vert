@@ -9,9 +9,9 @@ const float PI = 3.1415;
 void main() {
     // Oprava z 0 - 1 na -1 - 1
     vec2 position = inPosition;
-    float x = position.x;
-    float y = position.y;
-    float z = 0f;
+    float x = position.x*2;
+    float y = position.y*2;
+    float z = 0.0f;
 
     float az = x * PI;
     float ze = y * PI ;
@@ -25,6 +25,6 @@ void main() {
     position = vec2(x, y);
 
     //Finalni slození pozice
-    vec3 finalPosition = vec3(position, -z);
+    vec3 finalPosition = vec3(position, z);
     gl_Position = uProj * uView * uModel * vec4(finalPosition, 1.0);
 }
