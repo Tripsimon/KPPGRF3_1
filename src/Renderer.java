@@ -30,6 +30,8 @@ public class Renderer extends AbstractRenderer {
     //cviceni
     private int shaderProgram, locMat;
 
+    private float rotation = 0;
+
     private int loadedShaderProgramFlat, loadedShaderProgramSin;
     //OVladani programu
     private boolean mouseButton1 = false;
@@ -180,6 +182,11 @@ public class Renderer extends AbstractRenderer {
         }else{
             glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(orthProj)));
         }
+
+        rotation += 0.005f;
+        Mat4 model = new Mat4RotZ(rotation);
+        int uModel = glGetUniformLocation(shaderProgram, "uModel");
+        glUniformMatrix4fv(uModel, false, model.floatArray());
 
         // Vlastní vykreslení objektu
         buffers.draw(chosenRenderForm, shaderProgram);

@@ -1,5 +1,6 @@
 in vec2 inPosition;
 
+uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProj;
 
@@ -15,5 +16,5 @@ void main() {
 
     //Hotova pozice bodů
     vec3 finalPosition = vec3(position, z);
-    gl_Position = uProj * uView * vec4(finalPosition, 1.0);
+    gl_Position = uProj * uView * uModel * vec4(finalPosition, 1.0);
 }

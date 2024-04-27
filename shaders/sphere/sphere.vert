@@ -2,6 +2,7 @@ in vec2 inPosition;
 
 uniform mat4 uView;
 uniform mat4 uProj;
+uniform mat4 uModel;
 
 const float PI = 3.1415;
 
@@ -25,5 +26,5 @@ void main() {
 
     //Finalni slození pozice
     vec3 finalPosition = vec3(position, -z);
-    gl_Position = uProj * uView * vec4(finalPosition, 1.0);
+    gl_Position = uProj * uView * uModel * vec4(finalPosition, 1.0);
 }
