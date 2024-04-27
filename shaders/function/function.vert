@@ -3,13 +3,15 @@ in vec2 inPosition;
 uniform mat4 uModel;
 uniform mat4 uView;
 uniform mat4 uProj;
+uniform float changeX;
+uniform float changeY;
 
 void main() {
     // Oprava z 0 - 1 na -1 - 1
     vec2 position = inPosition * 2 - 1;
     float x = position.x;
     float y = position.y;
-    float z = sin(x*3) * cos(y*3);
+    float z = sin(x*(changeX+3)) * cos(y*(changeY+3));
 
     //Uprava pozice
     position = vec2(x, y);

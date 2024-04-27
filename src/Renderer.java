@@ -31,8 +31,9 @@ public class Renderer extends AbstractRenderer {
     private int shaderProgram, locMat;
 
     private float rotation = 0;
+    private float changeX, changeY = 0;
 
-    private int loadedShaderProgramFlat, loadedShaderProgramFunction ,loadedShaderProgramSphere, loadedShaderProgramHourglass, loadedShaderProgramCylinder;
+    private int loadedShaderProgramFlat, loadedShaderProgramFunction ,loadedShaderProgramSphere, loadedShaderProgramHourglass, loadedShaderProgramCylinder, loadedShaderProgramAbomination;
     //OVladani programu
     private boolean mouseButton1 = false;
     private boolean mouseButton2 = false;
@@ -46,11 +47,13 @@ public class Renderer extends AbstractRenderer {
 
     //Uživatelské nastavení
     private int chosenSolid = 1;
-
     private int chosenShaderProgram = 1;
     private int chosenForm = GL_LINE;
     private int chosenRenderForm = GL_TRIANGLES;
     private int chosenProjection = 1;
+    private int chosenAnimation = 1;
+
+
 
     @Override
     public void init() {
@@ -76,6 +79,7 @@ public class Renderer extends AbstractRenderer {
         loadedShaderProgramSphere = ShaderUtils.loadProgram("/sphere/sphere");
         loadedShaderProgramHourglass = ShaderUtils.loadProgram("/hourglass/hourglass");
         loadedShaderProgramCylinder = ShaderUtils.loadProgram("/cylinder/cylinder");
+        loadedShaderProgramAbomination = ShaderUtils.loadProgram("/abomination/abomination");
         shaderProgram = loadedShaderProgramFlat;
 
 
@@ -107,37 +111,8 @@ public class Renderer extends AbstractRenderer {
         //Měnitelné nastavení uživatelem
         glPolygonMode(GL_FRONT_AND_BACK, chosenForm);
 
-        //Výběr tělesa
-        /* Depracated protoze jsem idiot
-        switch (chosenSolid) {
-            case 1:
-                createBuffersGrid();
-                break;
 
-            case 2:
-                createBuffersCube();
-                break;
-
-            case 3:
-                createBuffersPike();
-                break;
-
-            case 4:
-                createBuffersSphere();
-                break;
-
-            case 5:
-                createBuffersTeapot();
-                break;
-
-            case 6:
-                createBuffersSword();
-                break;
-
-            default:
-                break;
-        }*/
-
+        //Výběr shaderu
         switch (chosenShaderProgram) {
             case 1:
                 shaderProgram = loadedShaderProgramFlat;
@@ -160,7 +135,7 @@ public class Renderer extends AbstractRenderer {
                 break;
 
             case 6:
-                shaderProgram = loadedShaderProgramFlat;
+                shaderProgram = loadedShaderProgramAbomination;
                 break;
 
             default:
@@ -171,12 +146,42 @@ public class Renderer extends AbstractRenderer {
         //Nastavení používaného shaderu
         glUseProgram(shaderProgram);
 
-
         int uView = glGetUniformLocation(shaderProgram, "uView");
         glUniformMatrix4fv(uView, false, camera.getViewMatrix().floatArray());
 
+
         int uProj = glGetUniformLocation(shaderProgram, "uProj");
         glUniformMatrix4fv(uProj, false, perspProj.floatArray());
+
+
+        switch (chosenAnimation){
+            case 2:
+                changeX += 0.02f;
+                break;
+
+            case 3:
+                changeY += 0.02f;
+                break;
+
+            case 4:
+                changeX += 0.02f;
+                changeY += 0.02f;
+                break;
+
+            case 5:
+                changeX -= 0.02f;
+                changeY -= 0.02f;
+                break;
+
+            default:
+                break;
+        }
+
+        int changeXLoc = glGetUniformLocation(shaderProgram,"changeX");
+        glUniform1f(changeXLoc,changeX);
+        int changeYLoc = glGetUniformLocation(shaderProgram,"changeY");
+        glUniform1f(changeYLoc,changeY);
+
 
         //Projekce
         if (chosenProjection == 1){
@@ -185,10 +190,11 @@ public class Renderer extends AbstractRenderer {
             glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(orthProj)));
         }
 
-        rotation += 0.005f;
+        //rotation += 0.005f;
         Mat4 model = new Mat4RotZ(rotation);
         int uModel = glGetUniformLocation(shaderProgram, "uModel");
         glUniformMatrix4fv(uModel, false, model.floatArray());
+
 
         // Vlastní vykreslení objektu
         buffers.draw(chosenRenderForm, shaderProgram);
@@ -203,160 +209,6 @@ public class Renderer extends AbstractRenderer {
         buffers = grid.getBuffers();
     }
 
-    void createBuffersFlatness(){
-
-        float[] vertexBuffer ={
-
-                0, 0, 0,	1, 0, 0,
-                1, 0, 0,	0, 1, 0,
-                0, 1, 0,	0, 0, 1,
-                1, 1, 0,	1, 0, 0,
-
-                1, 0, 0,	1, 0, 0,
-                2, 0, 0,	0, 1, 0,
-                1, 1, 0,	0, 0, 1,
-                2, 1, 0,	0, 0, 0,
-
-                0, 1, 0,	1, 0, 0,
-                1, 1, 0,	0, 1, 0,
-                0, 2, 0,	0, 0, 1,
-                1, 2, 0,	0, 0, 0,
-
-                1, 1, 0,	1, 0, 0,
-                2, 1, 0,	0, 1, 0,
-                1, 2, 0,	0, 0, 1,
-                2, 2, 0,	0, 0, 0,
-
-
-                0, 2, 0,	1, 0, 0,
-                1, 2, 0,	0, 1, 0,
-                0, 3, 0,	0, 0, 1,
-                1, 3, 0,	0, 0, 0,
-
-                1, 2, 0,	1, 0, 0,
-                2, 2, 0,	0, 1, 0,
-                1, 3, 0,	0, 0, 1,
-                2, 3, 0,	0, 0, 0,
-
-                //Vrchní strana
-
-        };
-        int[] indexBuffer = {
-                0, 1, 2, 1, 2, 3,
-
-                4, 5, 6, 5, 6, 7,
-
-                8, 9, 10, 9, 10, 11,
-
-                12, 13, 11, 13, 14, 15,
-
-                16, 17, 18, 17, 18, 19,
-
-                20, 21, 22, 21, 22, 23
-
-        };
-
-        OGLBuffers.Attrib[] attributes = {
-                new OGLBuffers.Attrib("inPosition", 3),
-                new OGLBuffers.Attrib("inNormal", 3)
-        };
-
-        buffers = new OGLBuffers(vertexBuffer, attributes, indexBuffer);
-    }
-
-    void createBuffersCube(){
-
-        float[] vertexBuffer ={
-
-                //Spodní strana
-                1, 0, 0,	0, 0, -1,
-                0, 0, 0,	0, 0, -1,
-                1, 1, 0,	0, 0, -1,
-                0, 1, 0,	0, 0, -1,
-
-                //Vrchní strana
-                1, 0, 1,	0, 0, 1,
-                0, 0, 1,	0, 0, 1,
-                1, 1, 1,	0, 0, 1,
-                0, 1, 1,	0, 0, 1,
-
-                //Pravá strana
-                1, 1, 0,	1, 0, 0,
-                1, 0, 0,	1, 0, 0,
-                1, 1, 1,	1, 0, 0,
-                1, 0, 1,	1, 0, 0,
-
-                //Levá strana
-                0, 1, 0,	-1, 0, 0,
-                0, 0, 0,	-1, 0, 0,
-                0, 1, 1,	-1, 0, 0,
-                0, 0, 1,	-1, 0, 0,
-
-                //Přední strana
-                1, 1, 0,	0, 1, 0,
-                0, 1, 0,	0, 1, 0,
-                1, 1, 1,	0, 1, 0,
-                0, 1, 1,	0, 1, 0,
-
-                //Zadní strana
-                1, 0, 0,	0, -1, 0,
-                0, 0, 0,	0, -1, 0,
-                1, 0, 1,	0, -1, 0,
-                0, 0, 1,	0, -1, 0
-        };
-        int[] indexBufferData = new int[36];
-        for (int i = 0; i<6; i++){
-            indexBufferData[i*6] = i*4;
-            indexBufferData[i*6 + 1] = i*4 + 1;
-            indexBufferData[i*6 + 2] = i*4 + 2;
-            indexBufferData[i*6 + 3] = i*4 + 1;
-            indexBufferData[i*6 + 4] = i*4 + 2;
-            indexBufferData[i*6 + 5] = i*4 + 3;
-        }
-        OGLBuffers.Attrib[] attributes = {
-                new OGLBuffers.Attrib("inPosition", 3),
-                new OGLBuffers.Attrib("inNormal", 3)
-        };
-
-        buffers = new OGLBuffers(vertexBuffer, attributes, indexBufferData);
-    }
-
-    // !! POZOR !! NENí JEHLAN SCHVALNE. Tenhle obrazec je trochu vic interesting. Aby to byl jehlan, musel bych trochu proházet index vertex tak aby se nekřížily trojuhelniky
-    void createBuffersPike(){
-
-        float[] vertexBuffer ={
-                0, 0, 0,	1, 0, 0,
-                1, 0, 0,	0, 1, 0,
-                0, 1, 0,	0, 0, 1,
-                1, 1, 0,	1, 0, 0,
-
-                0.5f,0.5f,1,   1, 1, 1
-        };
-        int[] indexBuffer = {
-                0, 1, 2, 1, 2, 3,
-
-                0, 1, 4, 1, 2, 4, 2, 3, 4, 3, 0, 4
-        };
-
-        OGLBuffers.Attrib[] attributes = {
-                new OGLBuffers.Attrib("inPosition", 3),
-                new OGLBuffers.Attrib("inNormal", 3)
-        };
-
-        buffers = new OGLBuffers(vertexBuffer, attributes, indexBuffer);
-    }
-
-    void createBuffersSphere(){
-        buffers = sphereModel.getBuffers();
-    }
-
-    void createBuffersTeapot(){
-        buffers = teapotModel.getBuffers();
-    }
-
-    void createBuffersSword(){
-        buffers = swordModel.getBuffers();
-    }
 
 
     private GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
@@ -421,6 +273,15 @@ public class Renderer extends AbstractRenderer {
                 chosenProjection = (chosenProjection == 1) ? 2 : 1;
             }
 
+            //Zapnutí animace
+            if (key == GLFW_KEY_G && action == GLFW_RELEASE) {
+                changeX = 0;
+                changeY = 0;
+                chosenAnimation++;
+                if(chosenAnimation == 6){
+                    chosenAnimation = 1;
+                }
+            }
         }
     };
 

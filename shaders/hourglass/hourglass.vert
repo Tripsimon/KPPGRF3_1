@@ -3,6 +3,8 @@ in vec2 inPosition;
 uniform mat4 uView;
 uniform mat4 uProj;
 uniform mat4 uModel;
+uniform float changeX;
+uniform float changeY;
 
 const float PI = 3.1415;
 
@@ -17,8 +19,8 @@ void main() {
     float ze = y * PI ;
     float r = 1.0;
 
-     x = r * cos(az) * cos(ze);
-     y =  r * sin (az) * cos(ze);
+     x = r * cos(az) * cos(ze +changeX);
+     y =  r * sin (az + changeY) * cos(ze);
      z =  r*2 / (ze*0.3f);
 
     //Uprava pozice
