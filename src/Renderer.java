@@ -34,18 +34,20 @@ public class Renderer extends AbstractRenderer {
     private float changeX, changeY = 0;
 
     private int loadedShaderProgramFlat, loadedShaderProgramFunction ,loadedShaderProgramSphere, loadedShaderProgramHourglass, loadedShaderProgramCylinder, loadedShaderProgramAbomination;
-    //OVladani programu
+
+    //Ovladani programu
     private boolean mouseButton1 = false;
     private boolean mouseButton2 = false;
     double ox, oy;
     double mouseRotateX, mouseRotateY, mouseRotateXOffset, mouseRotateYOffset;
-    int model;
+    double mouseResize = 1;
+    double translateX = 0;
+    double translateY = 0;
 
     //Proměné pro vykreslení
     private Mat4 perspProj,orthProj;
     private OGLBuffers buffers;
     private Grid grid;
-    private OGLModelOBJ sphereModel,teapotModel,swordModel;
 
     //Uživatelské nastavení
     private int chosenSolid = 1;
@@ -68,12 +70,6 @@ public class Renderer extends AbstractRenderer {
         //Projekční matice
         perspProj = new Mat4PerspRH(Math.PI / 4, 1, 0.01f, 1000.f);
         orthProj = new Mat4OrthoRH(Math.PI , Math.PI , 0.1f, 1000.f);
-
-
-        //Objekty
-        sphereModel = new OGLModelOBJ("/obj/sphere.obj");
-        teapotModel = new OGLModelOBJ("/obj/teapot.obj");
-        swordModel = new OGLModelOBJ("/obj/sword.obj");
 
 
         loadedShaderProgramFlat = ShaderUtils.loadProgram("/flat/flat");
@@ -194,7 +190,11 @@ public class Renderer extends AbstractRenderer {
 
         Mat4 rotationX = new Mat4RotX(mouseRotateX);
         Mat4 rotationY = new Mat4RotY(mouseRotateY);
+        Mat4 resize = new Mat4Scale(mouseResize);
+        Mat4 translate = new Mat4Transl(translateX, translateY,0f);
         Mat4 model = rotationX.mul(rotationY);
+        model = model.mul(resize);
+        model =  model.mul(translate);
         int uModel = glGetUniformLocation(shaderProgram, "uModel");
         glUniformMatrix4fv(uModel, false, model.floatArray());
 
@@ -271,12 +271,29 @@ public class Renderer extends AbstractRenderer {
                 chosenRenderForm = (chosenRenderForm == GL_TRIANGLES) ? GL_TRIANGLE_STRIP : GL_TRIANGLES;
             }
 
-            //Reset rotace
+            //Reset transofmraci
             if (key == GLFW_KEY_T && action == GLFW_RELEASE) {
                 mouseRotateX = 0;
                 mouseRotateXOffset = 0;
                 mouseRotateY = 0;
                 mouseRotateYOffset = 0;
+                mouseResize = 1;
+            }
+
+            if (key == GLFW_KEY_UP && action == GLFW_RELEASE && mouseButton2) {
+                translateX +=1;
+            }
+
+            if (key == GLFW_KEY_DOWN && action == GLFW_RELEASE && mouseButton2) {
+                translateX -=1;
+            }
+
+            if (key == GLFW_KEY_LEFT && action == GLFW_RELEASE && mouseButton2) {
+                translateY +=1;
+            }
+
+            if (key == GLFW_KEY_RIGHT && action == GLFW_RELEASE && mouseButton2) {
+                translateY -=1;
             }
 
             //Změna projekce
@@ -375,6 +392,9 @@ public class Renderer extends AbstractRenderer {
     private GLFWScrollCallback scrollCallback = new GLFWScrollCallback() {
         @Override
         public void invoke(long window, double dx, double dy) {
+            if (mouseButton2){
+                mouseResize += dy/10;
+            }
         }
     };
 
