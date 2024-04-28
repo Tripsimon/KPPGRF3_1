@@ -38,6 +38,8 @@ public class Renderer extends AbstractRenderer {
     private boolean mouseButton1 = false;
     private boolean mouseButton2 = false;
     double ox, oy;
+    double mouseRotateX, mouseRotateY, mouseRotateXOffset, mouseRotateYOffset;
+    int model;
 
     //Proměné pro vykreslení
     private Mat4 perspProj,orthProj;
@@ -190,8 +192,9 @@ public class Renderer extends AbstractRenderer {
             glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(orthProj)));
         }
 
-        //rotation += 0.005f;
-        Mat4 model = new Mat4RotZ(rotation);
+        Mat4 rotationX = new Mat4RotX(mouseRotateX);
+        Mat4 rotationY = new Mat4RotY(mouseRotateY);
+        Mat4 model = rotationX.mul(rotationY);
         int uModel = glGetUniformLocation(shaderProgram, "uModel");
         glUniformMatrix4fv(uModel, false, model.floatArray());
 
@@ -268,6 +271,14 @@ public class Renderer extends AbstractRenderer {
                 chosenRenderForm = (chosenRenderForm == GL_TRIANGLES) ? GL_TRIANGLE_STRIP : GL_TRIANGLES;
             }
 
+            //Reset rotace
+            if (key == GLFW_KEY_T && action == GLFW_RELEASE) {
+                mouseRotateX = 0;
+                mouseRotateXOffset = 0;
+                mouseRotateY = 0;
+                mouseRotateYOffset = 0;
+            }
+
             //Změna projekce
             if (key == GLFW_KEY_P && action == GLFW_RELEASE) {
                 chosenProjection = (chosenProjection == 1) ? 2 : 1;
@@ -327,6 +338,13 @@ public class Renderer extends AbstractRenderer {
 
             if (button==GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS){
                 mouseButton2 = true;
+
+                DoubleBuffer xBuffer = BufferUtils.createDoubleBuffer(1);
+                DoubleBuffer yBuffer = BufferUtils.createDoubleBuffer(1);
+                glfwGetCursorPos(window, xBuffer, yBuffer);
+                mouseRotateXOffset = xBuffer.get(0);
+                mouseRotateYOffset = yBuffer.get(0);
+
             }
             if (button==GLFW_MOUSE_BUTTON_2 && action == GLFW_RELEASE){
                 mouseButton2 = false;
@@ -340,9 +358,16 @@ public class Renderer extends AbstractRenderer {
         public void invoke(long window, double x, double y) {
             if (mouseButton1) {
                 camera = camera.addAzimuth((double) Math.PI * (ox - x) / width)
-                        .addZenith((double) Math.PI * (oy - y) / width);
+                        .addZenith((double) Math.PI * (oy - y) / height);
                 ox = x;
                 oy = y;
+            }
+
+            if (mouseButton2) {
+                mouseRotateX += (double) Math.PI *  (mouseRotateXOffset - x) / width;
+                mouseRotateY += (double) Math.PI *  (mouseRotateYOffset - y) / height;
+                mouseRotateXOffset = x;
+                mouseRotateYOffset = y;
             }
         }
     };
