@@ -7,6 +7,7 @@ uniform mat4 uView;
 uniform mat4 uProj;
 uniform float changeX;
 uniform float changeY;
+uniform int ChangeColorMode;
 
 out vec4  vertPositionColor;
 
@@ -35,8 +36,10 @@ void main() {
     position = vec2(x, y);
 
     //Hotova pozice bodů
-    vec3 finalPosition = vec3(position, z);
+    vec4 finalPosition = uProj * uView * uModel * vec4(vec3(position, z), 1.0);
 
-    vertPositionColor = (uProj * uView  * vec4(finalPosition, 1.0));
-    gl_Position = uProj * uView * uModel * vec4(finalPosition, 1.0);
+    //vertPositionColor = (finalPosition);
+    //vertPositionColor = vec4( normal,1);
+    vertPositionColor = finalPosition.
+    gl_Position = finalPosition;
 }

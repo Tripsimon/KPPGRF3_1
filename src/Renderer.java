@@ -56,6 +56,7 @@ public class Renderer extends AbstractRenderer {
     private int chosenRenderForm = GL_TRIANGLES;
     private int chosenProjection = 1;
     private int chosenAnimation = 1;
+    private int chosenColorMode = 1;
 
 
 
@@ -72,12 +73,47 @@ public class Renderer extends AbstractRenderer {
         orthProj = new Mat4OrthoRH(Math.PI , Math.PI , 0.1f, 1000.f);
 
 
-        loadedShaderProgramFlat = ShaderUtils.loadProgram("/flat/flat");
-        loadedShaderProgramFunction = ShaderUtils.loadProgram("/function/function");
-        loadedShaderProgramSphere = ShaderUtils.loadProgram("/sphere/sphere");
-        loadedShaderProgramHourglass = ShaderUtils.loadProgram("/hourglass/hourglass");
-        loadedShaderProgramCylinder = ShaderUtils.loadProgram("/cylinder/cylinder");
-        loadedShaderProgramAbomination = ShaderUtils.loadProgram("/abomination/abomination");
+        try {
+            loadedShaderProgramFlat = ShaderUtils.loadProgram("/flat/flat");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            loadedShaderProgramFunction = ShaderUtils.loadProgram("/function/function");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            loadedShaderProgramSphere = ShaderUtils.loadProgram("/sphere/sphere");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            loadedShaderProgramHourglass = ShaderUtils.loadProgram("/hourglass/hourglass");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            loadedShaderProgramCylinder = ShaderUtils.loadProgram("/cylinder/cylinder");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        try {
+            loadedShaderProgramAbomination = ShaderUtils.loadProgram("/abomination/abomination");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+
+
+
+
         shaderProgram = loadedShaderProgramFlat;
 
 
@@ -179,6 +215,9 @@ public class Renderer extends AbstractRenderer {
         glUniform1f(changeXLoc,changeX);
         int changeYLoc = glGetUniformLocation(shaderProgram,"changeY");
         glUniform1f(changeYLoc,changeY);
+
+        int changeColorModeLoc = glGetUniformLocation(shaderProgram,"ChangeColorMode");
+        glUniform1f(changeColorModeLoc,chosenColorMode);
 
 
         //Projekce
