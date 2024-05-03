@@ -10,6 +10,9 @@ import transforms.*;
 
 import java.io.IOException;
 import java.nio.DoubleBuffer;
+
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL20.*;
 
@@ -135,18 +138,24 @@ public class Renderer extends AbstractRenderer {
         }
 
 
+        //Shader programy
         shaderProgram = loadedShaderProgramFlat;
         shaderProgramSecondthing = loadedShaderProgramSphere;
+
+
+        //Inicializace mřížky pro vykreslování
         createBuffersGrid();
 
+        //Vybrání základního nastavení shaderu
         glUseProgram(this.shaderProgram);
-
-        //locMat = glGetUniformLocation(shaderProgram, "mat");
 
         //Inicializace kamery
         camera = camera.withPosition(new Vec3D(5, 5, 2.5))
                 .withAzimuth(Math.PI * 1.25)
                 .withZenith(Math.PI * -0.125);
+
+
+        //Shader proměnmé
 
 
         //Misc nastavení
@@ -165,6 +174,7 @@ public class Renderer extends AbstractRenderer {
 
         //Měnitelné nastavení uživatelem
         glPolygonMode(GL_FRONT_AND_BACK, chosenForm);
+        rotSecondthing += 0.02f;
 
         //Výběr shaderu
         switch (chosenShaderProgram) {
@@ -204,9 +214,11 @@ public class Renderer extends AbstractRenderer {
         textureBricks.bind(shaderProgram, "textureBricks", 0);
         textureGlobe.bind(shaderProgram, "textureGlobe", 1);
 
+        //Uniform view matice
         int uView = glGetUniformLocation(shaderProgram, "uView");
         glUniformMatrix4fv(uView, false, camera.getViewMatrix().floatArray());
 
+        //Uniform projekční matice
         int uProj = glGetUniformLocation(shaderProgram, "uProj");
         if (chosenProjection == 1) {
             glUniformMatrix4fv(uProj, false, perspProj.floatArray());
@@ -214,8 +226,7 @@ public class Renderer extends AbstractRenderer {
             glUniformMatrix4fv(uProj, false, orthProj.floatArray());
         }
 
-
-
+        //Přepínání možností animací
         switch (chosenAnimation){
             case 2:
                 changeX += 0.02f;
@@ -239,25 +250,18 @@ public class Renderer extends AbstractRenderer {
                 break;
         }
 
-        // TODO:: Lokace do initu !!!
+        //Proměné pro animace
         int changeXLoc = glGetUniformLocation(shaderProgram,"changeX");
         glUniform1f(changeXLoc,changeX);
         int changeYLoc = glGetUniformLocation(shaderProgram,"changeY");
         glUniform1f(changeYLoc,changeY);
+
+        //Proměná shaderu pro změnu modu barev
         int changeColorModeLoc = glGetUniformLocation(shaderProgram,"chosenColorMode");
         glUniform1i(changeColorModeLoc,chosenColorMode);
 
 
-
-        /*
-        if (chosenProjection == 1){
-            glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(perspProj)));
-        }else{
-            glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(orthProj)));
-        }
-        */
-
-
+        //Proměné pro transformace
         Mat4 rotationX = new Mat4RotX(mouseRotateX);
         Mat4 rotationY = new Mat4RotY(mouseRotateY);
         Mat4 resize = new Mat4Scale(mouseResize);
@@ -288,12 +292,12 @@ public class Renderer extends AbstractRenderer {
             glUniformMatrix4fv(uProj, false, orthProj.floatArray());
         }
 
-        rotSecondthing += 0.02f;
-        uModel = glGetUniformLocation(shaderProgramSecondthing, "uModel");
-        Mat4 modelSecondthing = new Mat4Transl(-5,0,0);
+        int uModelSecond = glGetUniformLocation(shaderProgramSecondthing, "uModel");
+        Mat4 modelSecondthing = new Mat4Transl(0,0,0);
         modelSecondthing = modelSecondthing.mul(new Mat4RotX(rotSecondthing));
+        modelSecondthing = modelSecondthing.mul(new Mat4Transl(sin(rotSecondthing)*7,cos(rotSecondthing)*7,0));
+        glUniformMatrix4fv(uModelSecond, false, modelSecondthing.floatArray());
 
-        glUniformMatrix4fv(uModel, false, modelSecondthing.floatArray());
         buffers.draw(chosenRenderForm, shaderProgramSecondthing);
 
         // Zpracování volaných eventů
@@ -301,6 +305,7 @@ public class Renderer extends AbstractRenderer {
     }
 
 
+    // POuze příprava gridu
     void createBuffersGrid(){
         grid = new Grid(25, 25);
         buffers = grid.getBuffers();
