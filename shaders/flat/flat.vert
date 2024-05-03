@@ -17,18 +17,19 @@ out vec2 vertTextureCoord;
 out vec3 vertLightDirection;
 out float vertLightSourceDistance;
 const float PI = 3.1415926;
+
 void main() {
     // Oprava z 0 - 1 na -1 - 1
     vec2 positionFixed = inPosition * 2 - 1;
-    vec4 viewSpace = uView * uModel * vec4(positionFixed, 0 , 1);
-    gl_Position = uProj * viewSpace;
 
 
     // Proměné pro výpočty
     float x = positionFixed.x + changeX;
     float y = positionFixed.y + changeY;
     float z = 0.0f;
+    vec4 viewSpace = uView * uModel * vec4(x,y, z , 1);
     vertTextureCoord = inPosition;
+    gl_Position = uProj * viewSpace;
 
     //Normála
     vertNormalVector = transpose(inverse(mat3(uView * uModel))) * vec3(0, 0, 1);
