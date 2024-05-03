@@ -1,7 +1,4 @@
-import lwjglutils.OGLBuffers;
-import lwjglutils.OGLModelOBJ;
-import lwjglutils.ShaderUtils;
-import lwjglutils.ToFloatArray;
+import lwjglutils.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -11,6 +8,7 @@ import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import solids.Grid;
 import transforms.*;
 
+import java.io.IOException;
 import java.nio.DoubleBuffer;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -58,7 +56,8 @@ public class Renderer extends AbstractRenderer {
     private int chosenAnimation = 1;
     private int chosenColorMode = 1;
 
-
+    //Textury
+    private OGLTexture2D textureBricks, textureGlobe, textureTypewriter, textureBaratheon;
 
     @Override
     public void init() {
@@ -109,6 +108,31 @@ public class Renderer extends AbstractRenderer {
             e.printStackTrace();
         }
 
+        // Načtení textur
+        try {
+            textureBricks = new OGLTexture2D("./textures/bricks.jpg");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            textureGlobe = new OGLTexture2D("./textures/globe.jpg");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            textureTypewriter = new OGLTexture2D("./textures/typewriter.jpg");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            textureBaratheon = new OGLTexture2D("./textures/baratheon.png");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
 
 
@@ -129,7 +153,7 @@ public class Renderer extends AbstractRenderer {
                 .withZenith(Math.PI * -0.125);
 
         //Misc nastavení
-        glPointSize(2);
+        glPointSize(3);
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
     }
@@ -144,7 +168,6 @@ public class Renderer extends AbstractRenderer {
 
         //Měnitelné nastavení uživatelem
         glPolygonMode(GL_FRONT_AND_BACK, chosenForm);
-
 
         //Výběr shaderu
         switch (chosenShaderProgram) {
@@ -180,12 +203,20 @@ public class Renderer extends AbstractRenderer {
         //Nastavení používaného shaderu
         glUseProgram(shaderProgram);
 
+        // Bindování textury
+        textureBricks.bind(shaderProgram, "textureBricks", 0);
+        textureGlobe.bind(shaderProgram, "textureGlobe", 1);
+
         int uView = glGetUniformLocation(shaderProgram, "uView");
         glUniformMatrix4fv(uView, false, camera.getViewMatrix().floatArray());
 
-
         int uProj = glGetUniformLocation(shaderProgram, "uProj");
-        glUniformMatrix4fv(uProj, false, perspProj.floatArray());
+        if (chosenProjection == 1) {
+            glUniformMatrix4fv(uProj, false, perspProj.floatArray());
+        }else {
+            glUniformMatrix4fv(uProj, false, orthProj.floatArray());
+        }
+
 
 
         switch (chosenAnimation){
@@ -215,17 +246,19 @@ public class Renderer extends AbstractRenderer {
         glUniform1f(changeXLoc,changeX);
         int changeYLoc = glGetUniformLocation(shaderProgram,"changeY");
         glUniform1f(changeYLoc,changeY);
+        int changeColorModeLoc = glGetUniformLocation(shaderProgram,"chosenColorMode");
+        glUniform1i(changeColorModeLoc,chosenColorMode);
 
-        int changeColorModeLoc = glGetUniformLocation(shaderProgram,"ChangeColorMode");
-        glUniform1f(changeColorModeLoc,chosenColorMode);
 
 
-        //Projekce
+        /*
         if (chosenProjection == 1){
             glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(perspProj)));
         }else{
             glUniformMatrix4fv(locMat, false, ToFloatArray.convert(camera.getViewMatrix().mul(orthProj)));
         }
+        */
+
 
         Mat4 rotationX = new Mat4RotX(mouseRotateX);
         Mat4 rotationY = new Mat4RotY(mouseRotateY);
@@ -348,6 +381,12 @@ public class Renderer extends AbstractRenderer {
                 if(chosenAnimation == 6){
                     chosenAnimation = 1;
                 }
+            }
+
+            //Změna modu obarvení
+            if(key == GLFW_KEY_L && action == GLFW_RELEASE){
+                chosenColorMode++;
+                if (chosenColorMode == 9){chosenColorMode = 1;}
             }
         }
     };
