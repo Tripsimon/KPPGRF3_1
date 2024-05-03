@@ -19,7 +19,7 @@ void main() {
 
     vec3 ld = normalize(vertLightDirection);
     vec3 nd = normalize(vertNormalVector);
-    att = 1/(1 + 1 * vertLightDirection + 0,5 * vertLightDirection * vertLightDirection);
+
 
     float nDotL = max(dot(nd, ld), 0.0);
     vec4 totalDiffuse = nDotL * diffuseColor;
@@ -53,7 +53,7 @@ void main() {
 
         case 6:
     // Osvětlení bez textury
-            outColor = att * (ambientColor + totalDiffuse) * vec4(1, 1., 1, 1);
+            outColor = (ambientColor + totalDiffuse) * vec4(1, 1., 1, 1);
             break;
 
         case 7:

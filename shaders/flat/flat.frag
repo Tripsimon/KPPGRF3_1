@@ -22,6 +22,7 @@ void main() {
 
     float nDotL = max(dot(nd, ld), 0.0);
     vec4 totalDiffuse = nDotL * diffuseColor;
+    vec3 att = 1/(0.5+ 0,2 * vertLightDirection + 0,1 * vertLightDirection * vertLightDirection);
 
 
     switch (chosenColorMode) {
@@ -52,7 +53,7 @@ void main() {
 
         case 6:
             // Osvětlení bez textury
-            outColor = (ambientColor + totalDiffuse) * vec4(1, 1., 1, 1);
+            outColor = vec4(att,1) * (ambientColor + totalDiffuse) * vec4(1, 1., 1, 1);
             break;
 
         case 7:

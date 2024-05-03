@@ -59,6 +59,7 @@ public class Renderer extends AbstractRenderer {
     private int chosenProjection = 1;
     private int chosenAnimation = 1;
     private int chosenColorMode = 1;
+    private boolean chosenDoRotate = false;
 
     //Textury
     private OGLTexture2D textureBricks, textureGlobe, textureTypewriter, textureBaratheon;
@@ -293,9 +294,12 @@ public class Renderer extends AbstractRenderer {
         }
 
         int uModelSecond = glGetUniformLocation(shaderProgramSecondthing, "uModel");
-        Mat4 modelSecondthing = new Mat4Transl(0,0,0);
-        modelSecondthing = modelSecondthing.mul(new Mat4RotX(rotSecondthing));
-        modelSecondthing = modelSecondthing.mul(new Mat4Transl(sin(rotSecondthing)*7,cos(rotSecondthing)*7,0));
+        Mat4 modelSecondthing = new Mat4Transl(-1,0,2);
+        if (chosenDoRotate){
+            modelSecondthing = modelSecondthing.mul(new Mat4RotX(rotSecondthing));
+            modelSecondthing = modelSecondthing.mul(new Mat4Transl(sin(rotSecondthing)*7,cos(rotSecondthing)*7,0));
+        }
+
         glUniformMatrix4fv(uModelSecond, false, modelSecondthing.floatArray());
 
         buffers.draw(chosenRenderForm, shaderProgramSecondthing);
