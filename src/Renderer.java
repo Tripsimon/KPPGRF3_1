@@ -414,6 +414,15 @@ public class Renderer extends AbstractRenderer {
                 }
             }
 
+            //Zapnutí transformace druheho tělesa
+            if (key == GLFW_KEY_K && action == GLFW_RELEASE) {
+                 if (chosenDoRotate){
+                     chosenDoRotate = false;
+                 }else {
+                     chosenDoRotate = true;
+                 }
+            }
+
             //Změna modu obarvení
             if(key == GLFW_KEY_L && action == GLFW_RELEASE){
                 chosenColorMode++;
