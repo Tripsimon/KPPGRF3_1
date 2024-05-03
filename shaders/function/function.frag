@@ -61,9 +61,8 @@ void main() {
             break;
 
         case 8:
-    // Vzdalenost od zdroje světla
-
-            outColor = vec4(length(vertLightSourceDistance),length(vertLightSourceDistance),length(vertLightSourceDistance),1);
+    // Vzdalenost od zdroje světla (Velikost nenormalizovaného light vektoru)
+            outColor = vec4(length(vertLightDirection),length(vertLightDirection),length(vertLightDirection),1);
             break;
 
         default:

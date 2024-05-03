@@ -19,6 +19,7 @@ void main() {
 
     vec3 ld = normalize(vertLightDirection);
     vec3 nd = normalize(vertNormalVector);
+    att = 1/(1 + 1 * vertLightDirection + 0,5 * vertLightDirection * vertLightDirection);
 
     float nDotL = max(dot(nd, ld), 0.0);
     vec4 totalDiffuse = nDotL * diffuseColor;
@@ -52,7 +53,7 @@ void main() {
 
         case 6:
     // Osvětlení bez textury
-            outColor = (ambientColor + totalDiffuse) * vec4(1, 1., 1, 1);
+            outColor = att * (ambientColor + totalDiffuse) * vec4(1, 1., 1, 1);
             break;
 
         case 7:
@@ -61,11 +62,9 @@ void main() {
             break;
 
         case 8:
-    // Vzdalenost od zdroje světla
-
-            outColor = vec4(length(vertLightSourceDistance),length(vertLightSourceDistance),length(vertLightSourceDistance),1);
+    // Vzdalenost od zdroje světla (Velikost nenormalizovaného light vektoru)
+            outColor = vec4(length(vertLightDirection),length(vertLightDirection),length(vertLightDirection),1);
             break;
-
         default:
             outColor = vec4(vertPositionColor);
             break;
