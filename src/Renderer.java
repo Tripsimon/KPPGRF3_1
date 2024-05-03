@@ -62,7 +62,7 @@ public class Renderer extends AbstractRenderer {
     private boolean chosenDoRotate = false;
 
     //Textury
-    private OGLTexture2D textureBricks, textureGlobe, textureTypewriter, textureBaratheon;
+    private OGLTexture2D textureBricks, textureBaratheon;
 
     @Override
     public void init() {
@@ -120,17 +120,7 @@ public class Renderer extends AbstractRenderer {
             e.printStackTrace();
         }
 
-        try {
-            textureGlobe = new OGLTexture2D("./textures/globe.jpg");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        try {
-            textureTypewriter = new OGLTexture2D("./textures/typewriter.jpg");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         try {
             textureBaratheon = new OGLTexture2D("./textures/baratheon.png");
@@ -213,7 +203,6 @@ public class Renderer extends AbstractRenderer {
 
         // Bindování textury
         textureBricks.bind(shaderProgram, "textureBricks", 0);
-        textureGlobe.bind(shaderProgram, "textureGlobe", 1);
 
         //Uniform view matice
         int uView = glGetUniformLocation(shaderProgram, "uView");
