@@ -28,47 +28,14 @@ void main() {
     float z = 0.0f;
     vertTextureCoord = inPosition;
 
-/*
-        //Vypocet normaly
-        float a = inPosition.x * PI * 2.;
-        float normz = inPosition.y * PI - PI / 2.;
-        vec3 dx = vec3(-3 * sin(a) * cos(normz) * PI * 2.,
-                       2. * cos(a) * cos(normz) * 2. * PI,
-                       0.
-        );
-        vec3 dy = vec3(-3. * cos(a) * sin(normz) * PI,
-                       -2. * sin(a) * sin(normz) * PI,
-                       cos(normz) * PI
-        );
-        normal = normalize(cross(dx, dy));
-        */
-
 
     vertNormalVector = transpose(inverse(mat3(uView * uModel))) * vec3(0, 0, 1);
 
 
-    //Uprava pozice
-
     //Hotova pozice bodů
     vec4 finalPosition = uProj * uView * uModel * vec4(vec3(positionFixed, z), 1.0);
+    vertPositionColor = finalPosition;
 
-
-
-
-    //Color Mode 1 - Pozice xyz – v souřadnicích pozorovatele
-    vertPositionColor = (finalPosition);
-
-    //Color Mode 2 - Hloubka – informace v depth bufferu
-
-    //Color Mode 3 - Normála xyz – v soustavě pozorovatele
-    //vertPositionColor = vec4(normal, 1);
-
-    //Color Mode 4 - Mapovaná textura rgba
-
-    // Color Mode 5 - Souřadnice do textury uv
-
-    //vertPositionColor = vec4(vec3(gl_FragCoord.z), 1.0);
-    //vertPositionColor = vec4( normal,1);
 
 }
 

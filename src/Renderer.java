@@ -26,7 +26,7 @@ public class Renderer extends AbstractRenderer {
     private Camera camera;
 
     //cviceni
-    private int shaderProgram, locMat;
+    private int shaderProgram, shaderProgramSecondthing;
 
     private float rotation = 0;
     private float changeX, changeY = 0;
@@ -41,6 +41,7 @@ public class Renderer extends AbstractRenderer {
     double mouseResize = 1;
     double translateX = 0;
     double translateY = 0;
+    float rotSecondthing = 0;
 
     //Proměné pro vykreslení
     private Mat4 perspProj,orthProj;
@@ -134,23 +135,19 @@ public class Renderer extends AbstractRenderer {
         }
 
 
-
-
-
-
         shaderProgram = loadedShaderProgramFlat;
-
-
+        shaderProgramSecondthing = loadedShaderProgramSphere;
         createBuffersGrid();
 
         glUseProgram(this.shaderProgram);
 
-        locMat = glGetUniformLocation(shaderProgram, "mat");
+        //locMat = glGetUniformLocation(shaderProgram, "mat");
 
         //Inicializace kamery
         camera = camera.withPosition(new Vec3D(5, 5, 2.5))
                 .withAzimuth(Math.PI * 1.25)
                 .withZenith(Math.PI * -0.125);
+
 
         //Misc nastavení
         glPointSize(3);
@@ -242,6 +239,7 @@ public class Renderer extends AbstractRenderer {
                 break;
         }
 
+        // TODO:: Lokace do initu !!!
         int changeXLoc = glGetUniformLocation(shaderProgram,"changeX");
         glUniform1f(changeXLoc,changeX);
         int changeYLoc = glGetUniformLocation(shaderProgram,"changeY");
@@ -273,6 +271,30 @@ public class Renderer extends AbstractRenderer {
 
         // Vlastní vykreslení objektu
         buffers.draw(chosenRenderForm, shaderProgram);
+
+        //Druhý solid
+        glUseProgram(shaderProgramSecondthing);
+        textureBaratheon.bind(shaderProgramSecondthing, "chosenTexture", 0);
+         changeColorModeLoc = glGetUniformLocation(shaderProgramSecondthing,"chosenColorMode");
+        glUniform1i(changeColorModeLoc,4);
+
+         uView = glGetUniformLocation(shaderProgramSecondthing, "uView");
+        glUniformMatrix4fv(uView, false, camera.getViewMatrix().floatArray());
+
+         uProj = glGetUniformLocation(shaderProgramSecondthing, "uProj");
+        if (chosenProjection == 1) {
+            glUniformMatrix4fv(uProj, false, perspProj.floatArray());
+        }else {
+            glUniformMatrix4fv(uProj, false, orthProj.floatArray());
+        }
+
+        rotSecondthing += 0.02f;
+        uModel = glGetUniformLocation(shaderProgramSecondthing, "uModel");
+        Mat4 modelSecondthing = new Mat4Transl(-5,0,0);
+        modelSecondthing = modelSecondthing.mul(new Mat4RotX(rotSecondthing));
+
+        glUniformMatrix4fv(uModel, false, modelSecondthing.floatArray());
+        buffers.draw(chosenRenderForm, shaderProgramSecondthing);
 
         // Zpracování volaných eventů
         glfwPollEvents();
